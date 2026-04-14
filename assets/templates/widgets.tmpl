@@ -1,0 +1,415 @@
+{{/* Tool Form Template - Used for standalone tool forms */}}
+{{define "toolform"}}
+{{if .Form.Title}}<h3 class="toolform-title">{{.Form.Title}}</h3>{{end}}
+{{if .Form.Description}}<p class="toolform-description">{{.Form.Description}}</p>{{end}}
+<form class="toolform {{if eq .Form.Layout "horizontal"}}layout-horizontal{{else if eq .Form.Layout "inline"}}layout-inline{{end}}"
+      method="{{.Form.Method}}"
+      action="{{.Form.Action}}"
+      {{if .Form.Ajax}}data-ajax="true"{{end}}>
+  <input type="hidden" name="_csrf" value="{{.Form.CSRF}}">
+
+  <div class="toolform-fields">
+    {{range .Form.Fields}}
+      {{template "toolform-field" dict "Field" . "Defaults" $.Form.Defaults}}
+    {{end}}
+  </div>
+
+  <div class="toolform-actions">
+    <button type="submit" class="btn btn-primary">提交</button>
+    <button type="reset" class="btn btn-secondary">重置</button>
+  </div>
+</form>
+{{end}}
+
+{{define "toolform-field"}}
+{{$field := .Field}}
+{{$defaults := .Defaults}}
+{{$value := index $defaults $field.Name}}
+
+{{if eq $field.Type "hidden"}}
+<input type="hidden" name="{{$field.Name}}" value="{{$value}}">
+
+{{else if eq $field.Type "display"}}
+<div class="toolform-field toolform-field-display">
+  <label>{{$field.Label}}</label>
+  <div class="display-value">{{$value}}</div>
+</div>
+
+{{else if eq $field.Type "text"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="text" name="{{$field.Name}}" value="{{$value}}" placeholder="{{$field.Placeholder}}">
+</div>
+
+{{else if eq $field.Type "number"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="number" name="{{$field.Name}}" value="{{$value}}" placeholder="{{$field.Placeholder}}" {{if $field.MinVal}}min="{{$field.MinVal}}"{{end}} {{if $field.MaxVal}}max="{{$field.MaxVal}}"{{end}} {{if $field.StepVal}}step="{{$field.StepVal}}"{{end}}>
+</div>
+
+{{else if eq $field.Type "email"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="email" name="{{$field.Name}}" value="{{$value}}" placeholder="{{$field.Placeholder}}">
+</div>
+
+{{else if eq $field.Type "password"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="password" name="{{$field.Name}}" value="{{$value}}" placeholder="{{$field.Placeholder}}">
+</div>
+
+{{else if eq $field.Type "textarea"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <textarea name="{{$field.Name}}" placeholder="{{$field.Placeholder}}" rows="4">{{$value}}</textarea>
+</div>
+
+{{else if eq $field.Type "editor"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <textarea name="{{$field.Name}}" class="tinymce-editor" placeholder="{{$field.Placeholder}}" {{if $field.EditorHeight}}style="height:{{$field.EditorHeight}}px"{{end}}>{{$value}}</textarea>
+</div>
+
+{{else if eq $field.Type "select"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <select name="{{$field.Name}}">
+    {{range $field.Options}}
+    <option value="{{.Value}}" {{if eq .Value $value}}selected{{end}}>{{.Label}}</option>
+    {{end}}
+  </select>
+</div>
+
+{{else if eq $field.Type "multiselect"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <select name="{{$field.Name}}[]" multiple>
+    {{range $field.Options}}
+    <option value="{{.Value}}" {{if .Selected}}selected{{end}}>{{.Label}}</option>
+    {{end}}
+  </select>
+</div>
+
+{{else if eq $field.Type "radio"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <div class="radio-group {{if $field.IsInline}}inline{{end}}">
+    {{range $field.Options}}
+    <label class="radio-label">
+      <input type="radio" name="{{$field.Name}}" value="{{.Value}}" {{if eq .Value $value}}checked{{end}}>
+      <span>{{.Label}}</span>
+    </label>
+    {{end}}
+  </div>
+</div>
+
+{{else if eq $field.Type "checkbox"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <div class="checkbox-group {{if $field.IsInline}}inline{{end}}">
+    {{range $field.Options}}
+    <label class="checkbox-label">
+      <input type="checkbox" name="{{$field.Name}}[]" value="{{.Value}}" {{if .Selected}}checked{{end}}>
+      <span>{{.Label}}</span>
+    </label>
+    {{end}}
+  </div>
+</div>
+
+{{else if eq $field.Type "switch"}}
+<div class="toolform-field">
+  <label class="switch-label">
+    <input type="checkbox" name="{{$field.Name}}" value="1" {{if $value}}checked{{end}}>
+    <span class="switch-slider"></span>
+    <span class="switch-text">{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</span>
+  </label>
+</div>
+
+{{else if eq $field.Type "date"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="date" name="{{$field.Name}}" value="{{$value}}" placeholder="{{$field.Placeholder}}">
+</div>
+
+{{else if eq $field.Type "time"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="time" name="{{$field.Name}}" value="{{$value}}" placeholder="{{$field.Placeholder}}">
+</div>
+
+{{else if eq $field.Type "datetime-local"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="datetime-local" name="{{$field.Name}}" value="{{$value}}" placeholder="{{$field.Placeholder}}">
+</div>
+
+{{else if eq $field.Type "color"}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="color" name="{{$field.Name}}" value="{{if $value}}{{$value}}{{else}}#000000{{end}}">
+</div>
+
+{{else if eq $field.Type "divider"}}
+<div class="toolform-divider">
+  {{if $field.Label}}<span>{{$field.Label}}</span>{{end}}
+</div>
+
+{{else if eq $field.Type "html"}}
+<div class="toolform-html">
+  {{safeHTML $field.HtmlContent}}
+</div>
+
+{{else}}
+<div class="toolform-field">
+  <label>{{$field.Label}}{{if $field.Required}}<span class="required">*</span>{{end}}</label>
+  <input type="text" name="{{$field.Name}}" value="{{$value}}" placeholder="{{$field.Placeholder}}">
+</div>
+{{end}}
+{{end}}
+
+{{/* Card Widget Template */}}
+{{define "card"}}
+<div class="widget-card {{.Class}}" {{if .ID}}id="{{.ID}}"{{end}} {{if .Collapsible}}data-collapsible="true"{{end}} {{if .Collapsed}}data-collapsed="true"{{end}} {{if .Removable}}data-removable="true"{{end}}>
+  {{if .Title}}
+  <div class="card-header">
+    <div class="card-header-content">
+      <h4 class="card-title">{{.Title}}</h4>
+      {{if .Subtitle}}<p class="card-subtitle">{{.Subtitle}}</p>{{end}}
+    </div>
+    <div class="card-tools">
+      {{range .Tools}}
+        {{safeHTML .}}
+      {{end}}
+      {{if .Collapsible}}
+      <button class="card-tool-btn card-collapse-btn" onclick="this.closest('.widget-card').classList.toggle('collapsed')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"/>
+        </svg>
+      </button>
+      {{end}}
+      {{if .Removable}}
+      <button class="card-tool-btn card-remove-btn" onclick="this.closest('.widget-card').remove()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+      {{end}}
+    </div>
+  </div>
+  {{end}}
+  <div class="card-body">
+    {{if .Loading}}
+    <div class="card-loading">
+      <div class="spinner"></div>
+    </div>
+    {{end}}
+    {{safeHTML .Content}}
+  </div>
+  {{if .Footer}}
+  <div class="card-footer">
+    {{safeHTML .Footer}}
+  </div>
+  {{end}}
+</div>
+{{end}}
+
+{{/* Modal Form Template */}}
+{{define "modalform"}}
+<div class="modal-wrapper" id="{{.ID}}" data-modal-form="true">
+  <div class="modal-overlay" onclick="closeModal('{{.ID}}')"></div>
+  <div class="modal-dialog modal-{{.Width}}" {{if .Height}}style="height:{{.Height}}"{{end}}>
+    <div class="modal-header">
+      <h4 class="modal-title">{{.Title}}</h4>
+      <button class="modal-close" onclick="closeModal('{{.ID}}')">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"/>
+          <line x1="6" y1="6" x2="18" y2="18"/>
+        </svg>
+      </button>
+    </div>
+    <div class="modal-body">
+      {{if .Async}}
+        <div class="modal-loading" data-async-url="{{.AsyncURL}}">
+          <div class="spinner"></div>
+        </div>
+      {{else}}
+        {{safeHTML .Content}}
+      {{end}}
+    </div>
+  </div>
+</div>
+{{end}}
+
+{{/* Chart Widget Template */}}
+{{define "chart"}}
+<div class="widget-chart" {{if .Width}}style="width: {{.Width}};"{{end}}>
+  {{if .Title}}<h4 class="chart-title">{{.Title}}</h4>{{end}}
+  {{if .Subtitle}}<p class="chart-subtitle">{{.Subtitle}}</p>{{end}}
+  <div class="chart-container" style="height: {{.Height}};">
+    <canvas id="{{.ID}}"></canvas>
+  </div>
+</div>
+<script>
+(function() {
+  const ctx = document.getElementById('{{.ID}}').getContext('2d');
+  const chartData = {{safeHTML .Data}};
+  const chartOptions = {{safeHTML .Options}};
+
+  new Chart(ctx, {
+    type: '{{.Type}}',
+    data: chartData,
+    options: chartOptions
+  });
+})();
+</script>
+{{end}}
+
+{{/* Tab Component Template */}}
+{{define "tabs"}}
+<div class="widget-tabs" data-tabs="true">
+  <div class="tab-nav">
+    {{range $i, $tab := .Tabs}}
+    <button class="tab-btn {{if eq $i 0}}is-active{{end}}" data-tab="{{$tab.ID}}" onclick="switchTab(this)">
+      {{$tab.Title}}
+    </button>
+    {{end}}
+  </div>
+  <div class="tab-content">
+    {{range $i, $tab := .Tabs}}
+    <div class="tab-panel {{if eq $i 0}}is-active{{end}}" data-panel="{{$tab.ID}}">
+      {{safeHTML $tab.Content}}
+    </div>
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+{{/* Dropdown Component Template */}}
+{{define "dropdown"}}
+<div class="widget-dropdown" data-dropdown="true">
+  <button class="dropdown-toggle btn {{.Class}}" onclick="toggleDropdown(this)">
+    {{.Label}}
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 12 15 18 9"/>
+    </svg>
+  </button>
+  <div class="dropdown-menu">
+    {{range .Items}}
+    {{if .Divider}}
+    <div class="dropdown-divider"></div>
+    {{else}}
+    <a class="dropdown-item {{if .Class}}{{.Class}}{{end}}" href="{{.URL}}" {{if .Confirm}}onclick="return confirm('{{.Confirm}}')"{{end}}>
+      {{if .Icon}}<span class="dropdown-icon">{{safeHTML .Icon}}</span>{{end}}
+      {{.Label}}
+    </a>
+    {{end}}
+    {{end}}
+  </div>
+</div>
+{{end}}
+
+{{/* Alert/Toast Component Template */}}
+{{define "alert"}}
+<div class="alert alert-{{.Type}} {{if .Dismissible}}alert-dismissible{{end}}" role="alert">
+  {{if .Title}}<strong class="alert-title">{{.Title}}</strong>{{end}}
+  {{if .Message}}<span class="alert-message">{{.Message}}</span>{{end}}
+  {{if .Dismissible}}
+  <button type="button" class="alert-close" onclick="this.parentElement.remove()">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <line x1="18" y1="6" x2="6" y2="18"/>
+      <line x1="6" y1="6" x2="18" y2="18"/>
+    </svg>
+  </button>
+  {{end}}
+</div>
+{{end}}
+
+{{/* Toast Container */}}
+{{define "toast-container"}}
+<div class="toast-container" id="toast-container"></div>
+<script>
+function showToast(message, type, title, duration) {
+  type = type || 'info';
+  duration = duration || 3000;
+  title = title || '';
+
+  const container = document.getElementById('toast-container');
+  const toast = document.createElement('div');
+  toast.className = 'toast toast-' + type;
+
+  let icon = '';
+  if (type === 'success') icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>';
+  else if (type === 'error') icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>';
+  else if (type === 'warning') icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>';
+  else icon = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>';
+
+  toast.innerHTML = '<div class="toast-icon">' + icon + '</div>' +
+    '<div class="toast-content">' + (title ? '<div class="toast-title">' + title + '</div>' : '') + '<div class="toast-message">' + message + '</div></div>' +
+    '<button type="button" class="toast-close" onclick="this.parentElement.remove()">&times;</button>';
+
+  container.appendChild(toast);
+
+  setTimeout(() => {
+    toast.classList.add('show');
+  }, 10);
+
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, duration);
+}
+
+// Auto-show flash messages as toasts
+document.addEventListener('DOMContentLoaded', function() {
+  const flashData = document.querySelector('[data-flash-messages]');
+  if (flashData) {
+    try {
+      const messages = JSON.parse(flashData.dataset.flashMessages);
+      messages.forEach(function(msg) {
+        showToast(msg.message, msg.type, msg.title, 5000);
+      });
+    } catch(e) {}
+  }
+});
+</script>
+{{end}}
+
+{{/* Async Loading Component */}}
+{{define "async"}}
+<div class="widget-async" data-async="true" data-async-url="{{.URL}}" data-async-interval="{{.Interval}}">
+  <div class="async-loading">
+    <div class="spinner"></div>
+    <span>Loading...</span>
+  </div>
+  <div class="async-content"></div>
+</div>
+<script>
+(function() {
+  const container = document.querySelector('[data-async-url="{{.URL}}"]');
+  if (!container) return;
+
+  function loadContent() {
+    fetch('{{.URL}}', {
+      headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(r => r.text())
+    .then(html => {
+      const contentDiv = container.querySelector('.async-content');
+      contentDiv.innerHTML = html;
+      container.querySelector('.async-loading').style.display = 'none';
+    })
+    .catch(err => {
+      container.querySelector('.async-loading').innerHTML = '<span class="async-error">Failed to load</span>';
+    });
+  }
+
+  loadContent();
+
+  {{if .Interval}}
+  setInterval(loadContent, {{.Interval}});
+  {{end}}
+})();
+</script>
+{{end}}
