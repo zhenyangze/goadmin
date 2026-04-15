@@ -92,6 +92,13 @@ func New(cfg Config, authService AuthService) (*App, error) {
 		"add": func(a, b int) int {
 			return a + b
 		},
+		"iterate": func(start, end int) []int {
+			var result []int
+			for i := start; i <= end; i++ {
+				result = append(result, i)
+			}
+			return result
+		},
 	}).ParseFS(assetFS, "assets/templates/*.tmpl")
 	if err != nil {
 		return nil, err
