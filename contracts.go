@@ -1,6 +1,9 @@
 package goadmin
 
-import "context"
+import (
+	"context"
+	"html/template"
+)
 
 // Values carries submitted form values, including repeated keys.
 type Values map[string][]string
@@ -74,7 +77,7 @@ type NavigationItem struct {
 	ID       uint
 	ParentID uint
 	Title    string
-	Icon     string
+	Icon     template.HTML
 	URI      string
 	Children []NavigationItem
 }

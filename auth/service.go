@@ -5,7 +5,8 @@ import (
 	"errors"
 	"net/http"
 	"sort"
-	"time"
+	"html/template"
+		"time"
 
 	"github.com/zhenyangze/goadmin"
 	"golang.org/x/crypto/bcrypt"
@@ -274,7 +275,7 @@ func (s *Service) Navigation(ctx context.Context, identity *goadmin.Identity) ([
 			ID:       menu.ID,
 			ParentID: menu.ParentID,
 			Title:    menu.Title,
-			Icon:     menu.Icon,
+			Icon:     template.HTML(menu.Icon),
 			URI:      menu.URI,
 		})
 	}
